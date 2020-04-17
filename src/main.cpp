@@ -231,6 +231,7 @@ void printResultRow(long value)
  * 
  * @param: swd clk pin no
  * @param: swd io pin no
+ * @return: true if swd lines found
  */ 
 bool testSwdLines(byte new_swclk_pin, byte new_swdio_pin)
 {
@@ -248,10 +249,12 @@ bool testSwdLines(byte new_swclk_pin, byte new_swdio_pin)
 
 /**
  * Search for SWD lines
- * 
+ *
  * Iterates through pins defined with PIN_MASK and PIN_MAX.
  * Pin n is enabled by setting bit n of PIN_MASK to 1,
  * PIN_MAX specifies the upper bound of search.
+ *
+ * @return: true if swd lines found
  */
 bool enumerateSwdLines()
 {
@@ -274,6 +277,8 @@ bool enumerateSwdLines()
  * Read cli byte
  * 
  * Waits for input as long as necessary.
+ *
+ * @return: byte read from serial port
  */
 byte readCliByte()
 {
@@ -297,7 +302,6 @@ void printPrompt()
 {
     Serial.print(PROMPT);
 }
-
 
 /**
  * Minimalistic command line interface
