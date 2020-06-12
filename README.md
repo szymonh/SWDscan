@@ -1,4 +1,4 @@
-# SWDenum
+# SWDscan
 
 This Arduino-based Platformio project allows quick identification of SWD ports.
 
