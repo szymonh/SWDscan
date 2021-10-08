@@ -4,17 +4,22 @@ This Arduino-based Platformio project allows quick identification of SWD ports.
 
 ## How does it work?
 
-The app iterates through microcontroller gpio pins following the definition specified using PIN_MASK and PIN_MAX to find SWD clock and io lines. Pins are enabled by setting corresponding bits of PIN_MASK, i.e. pins 2-8 are enabled for PIN_MASK of 0b111111100 or 0x1fc. PIN_MAX limits the tested pin set, for pins 2-8 set a value of 9 or greater.
+The app iterates through microcontroller gpio pins following the definition specified using PIN_MASK to find SWD clock and io lines. Pins are enabled by setting corresponding bits of PIN_MASK, i.e. pins 2-8 are enabled for PIN_MASK of 0b111111100 or 0x1fc.
+
+Besides PIN_MASK predefined at build time you can also set the pin mask at runtime using the
+_m_ command. Entering 508 or 0x1fc will result in pin_mask set to 0b111111100 so you can update the configuration
+without the need to rebuild the project.
 
 ## How to use it?
 
-- hook up your Arduino to the target 
+- hook up your Arduino to the target
 - use a logic level shifer between Arduino and target if required
-- adjust PIN_MASK and PIN_MAX for your setup
+- optionally adjust PIN_MASK for your setup, can be done later
 - select proper build target
 - build the project and upload it to your board
 - establish serial connection with baud rate of 115200
 - ammend debug options if required
+- use option _m_ to set a pin mask at runtime
 - use option _h_ for help
 - use option _e_ to enumerate pins
 

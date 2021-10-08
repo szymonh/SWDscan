@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #define PIN_MASK 0b11100
-#define PIN_MAX 5
 
 #define RESET_SEQUENCE_LENGTH 64
 #define CLOCK_HALF_CYCLE_US 250
@@ -22,13 +21,16 @@ enum debug_level {
     verbose
 };
 
+uint64_t pin_mask = PIN_MASK;
+uint8_t pin_max = 0;
+
 uint8_t swclk_pin = 2;
 uint8_t swdio_pin = 3;
 
 enum debug_level debug = quiet;
 bool break_on_hit = false;
 
-/** 
+/**
 * Prepare SWDIO line for master write
 */
 void setupMasterWrite()
@@ -37,7 +39,7 @@ void setupMasterWrite()
 }
 
 /**
- * Prepare SWDIO line for master read 
+ * Prepare SWDIO line for master read
  */
 void setupMasterRead()
 {
@@ -64,7 +66,7 @@ void resetPins()
 
 /**
  * Set pins for SWD IO and CLK
- * 
+ *
  * @param: new swd clock pin to set
  * @param: new swd io pin to set
  */
@@ -76,10 +78,10 @@ void setPins(byte new_swdclk_pin, byte new_swdio_pin)
 
 /**
  * Clock the SWDCLK line
- * 
+ *
  * Master both reads and writes on falling edge.
  * Target reads and writed data on rising edge.
- */ 
+ */
 void pulseClock()
 {
     digitalWrite(swclk_pin, LOW);
@@ -102,7 +104,7 @@ void resetLine()
 
 /**
  * Write a single bit to the target
- * 
+ *
  * @param: binary value eiter 0 or 1
  */
 void writeBit(bool value)
@@ -113,9 +115,9 @@ void writeBit(bool value)
 
 /**
  * Write n bits to the target
- * 
+ *
  * Data is written in LSB order
- * 
+ *
  * @param: value container
  * @param: number of bits to write
  */
@@ -139,9 +141,9 @@ void writeBits(long value, int length)
 
 /**
  * Read n bits from the target
- * 
+ *
  * Data is read in LSB order
- * 
+ *
  * @param: value container
  * @param: number of bits to read
  */
@@ -179,7 +181,7 @@ void turnaround()
 
 /**
  * Switch JTAG TMS to SWD
- * 
+ *
  * Multiple steps included:
  * - line reset
  * - jtag to swd command write
@@ -196,7 +198,7 @@ void switchJtagToSwd()
 
 /**
  * Read device id code
- * 
+ *
  * @param: pointer to a long value
  */
 void readIdCode(long *buffer)
@@ -211,28 +213,28 @@ void readIdCode(long *buffer)
 
 /**
  * Print result in a single row
- * 
+ *
  * @param: read value including ack and response data
  */
 void printResultRow(long value)
 {
     char buffer[60];
-    sprintf(buffer, ROW_FORMAT, 
-        swclk_pin, 
-        swdio_pin, 
-        getAck(value), 
-        getPartNo(value), 
+    sprintf(buffer, ROW_FORMAT,
+        swclk_pin,
+        swdio_pin,
+        getAck(value),
+        getPartNo(value),
         getManufacturer(value));
     Serial.print(buffer);
 }
 
 /**
  * Test for SWD on specified pins
- * 
+ *
  * @param: swd clk pin no
  * @param: swd io pin no
  * @return: true if swd lines found
- */ 
+ */
 bool testSwdLines(byte new_swclk_pin, byte new_swdio_pin)
 {
     bool result = false;
@@ -250,32 +252,62 @@ bool testSwdLines(byte new_swclk_pin, byte new_swdio_pin)
 /**
  * Search for SWD lines
  *
- * Iterates through pins defined with PIN_MASK and PIN_MAX.
- * Pin n is enabled by setting bit n of PIN_MASK to 1,
- * PIN_MAX specifies the upper bound of search.
+ * Iterates through pins defined with pin_mask and pin_max.
+ * Pin n is enabled by setting bit n of pin_mask to 1,
+ * pin_max specifies the upper bound of search.
  *
  * @return: true if swd lines found
  */
 bool enumerateSwdLines()
 {
     bool result = false;
-    for (int clk_pin=0; clk_pin<PIN_MAX; clk_pin++)
+    for (int clk_pin=0; clk_pin<pin_max; clk_pin++)
     {
-        if (bitRead(PIN_MASK, clk_pin) == LOW) continue;
-        for (int io_pin=0; io_pin<PIN_MAX; io_pin++)
+        if (bitRead(pin_mask, clk_pin) == LOW) continue;
+        for (int io_pin=0; io_pin<pin_max; io_pin++)
         {
-            if ((bitRead(PIN_MASK, io_pin) == LOW) || (io_pin == clk_pin)) continue;
+            if ((bitRead(pin_mask, io_pin) == LOW) || (io_pin == clk_pin)) continue;
             result |= testSwdLines(clk_pin, io_pin);
             if (result && break_on_hit) break;
         }
-        if (result && break_on_hit) break; 
+        if (result && break_on_hit) break;
     }
     return result;
 }
 
 /**
+ * Determine greatest pin set in provided mask
+ *
+ * @param: pin mask
+ * @return: highest pin number
+ */
+uint8_t getMaxPinFromMask(uint64_t pin_mask)
+{
+    uint8_t highest_pin = 0;
+    for (uint8_t i=0; i<64; i++)
+    {
+        if (bitRead(pin_mask, i) == HIGH)
+        {
+            highest_pin = i;
+        }
+    }
+    return highest_pin + 1;
+}
+
+/**
+ * Read and discard data on serial port
+ */
+void clearSerial()
+{
+    while (Serial.available() > 0)
+    {
+        Serial.read();
+    }
+}
+
+/**
  * Read cli byte
- * 
+ *
  * Waits for input as long as necessary.
  *
  * @return: byte read from serial port
@@ -287,9 +319,45 @@ byte readCliByte()
         if (Serial.available() > 0)
         {
             byte input = Serial.read();
-            Serial.write(input);
+            Serial.write((input >= 0x20 && input <= 0x7e) ? input : 0x20);
             Serial.println("");
+            clearSerial();
             return input;
+        }
+        delay(100);
+    }
+}
+
+/**
+ * Read long int from cli
+ *
+ * Waits for input as long as necessary.
+ *
+ * @return: long uint read from serial port
+ */
+uint64_t readCliUnsignedInt()
+{
+    char buffer[20];
+    uint8_t idx = 0;
+
+    while (true)
+    {
+        if (Serial.available() > 0)
+        {
+            byte input = Serial.read();
+            Serial.write((input >= 0x20 && input <= 0x7e) ? input : 0x20);
+            if ((idx < sizeof(buffer) - 1) && (input != 0x0d) && (input != 0x0a))
+            {
+                if (input >= 0x30 && input <= 0x7a)
+                    buffer[idx++] = input;
+            }
+            else
+            {
+                Serial.println("");
+                clearSerial();
+                buffer[idx] = 0x00;
+                return strtoul(buffer, NULL, 0);
+            }
         }
         delay(100);
     }
@@ -314,12 +382,25 @@ void commandLineInterface()
         case 'e':
             enumerateSwdLines();
             break;
+        case 'm':
+            {
+                Serial.print("Enter pin mask ");
+                pin_mask = readCliUnsignedInt();
+                pin_max = getMaxPinFromMask(pin_mask);
+                Serial.print("Pin mask set to ");
+                Serial.println((unsigned long) pin_mask, BIN);
+            }
+            break;
         case 't':
-            {   
+            {
                 Serial.print("Enter SWD CLK PIN NO ");
-                byte user_clk_pin = readCliByte() - 0x30;
+                byte user_clk_pin = (byte) readCliUnsignedInt();
                 Serial.print("Enter SWD IO PIN NO ");
-                byte user_io_pin = readCliByte() - 0x30;
+                byte user_io_pin = (byte) readCliUnsignedInt();
+                Serial.print("SWD CLK set to ");
+                Serial.println(user_clk_pin, DEC);
+                Serial.print("SWD IO set to ");
+                Serial.println(user_io_pin, DEC);
                 testSwdLines(user_clk_pin, user_io_pin);
             }
             break;
@@ -334,15 +415,20 @@ void commandLineInterface()
             {
                 Serial.print("Choose debug level 0-2 ");
                 byte choice = readCliByte() - 0x30;
-                debug = (enum debug_level) choice;
+                debug = (enum debug_level) ((choice < 0x03) ? choice : 0x00);
+                Serial.print("Debug set to ");
+                Serial.println(debug, DEC);
             }
             break;
         case 'h':
         default:
-            Serial.println("e - enumerate swd lines according to PIN_MASK and PIN_MAX");
+            Serial.println("e - enumerate swd lines");
+            Serial.print("m - set pin mask, current: ");
+            Serial.println((unsigned long) pin_mask, HEX);
             Serial.println("t - test pin pair for swd");
             Serial.println("b - break on hit");
-            Serial.println("d - choose debug level");
+            Serial.print("d - set debug level, current: ");
+            Serial.println(debug, DEC);
             Serial.println("h - this help");
             break;
     }
@@ -353,6 +439,7 @@ void commandLineInterface()
  */
 void setup()
 {
+    pin_max = getMaxPinFromMask(pin_mask);
     Serial.begin(115200);
 }
 
