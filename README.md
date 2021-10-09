@@ -57,6 +57,29 @@ Break work on hit? 1/0 1
 +----------------- SUCCESS -----------------+
 ```
 
+- swd enumaration with pin mask set at runtime
+```
+> m
+Enter pin mask 0xfc
+Pin mask set to 11111100
+> b
+Break work on hit? 1/0 1
+> d
+Choose debug level 0-2 1
+Debug set to 1
+> e
++-------------------------------------------+
+| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
++-------------------------------------------+
+|    2    |    3   |  7  |   ffff  |   7ff  |
+|    2    |    4   |  7  |   ffff  |   7ff  |
+|    2    |    5   |  7  |   ffff  |   7ff  |
+|    2    |    6   |  7  |   ffff  |   7ff  |
+|    2    |    7   |  7  |   ffff  |   7ff  |
+|    3    |    2   |  1  |   ba01  |   23b  |
++----------------- SUCCESS -----------------+
+```
+
 - test response on lines 3 and 2 with debug level 1 (valid connection, read part no is 0xba01)
 ```
 > t
