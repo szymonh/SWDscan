@@ -8,7 +8,11 @@
 #define DESIGNER_DEFAULT 0x23B
 #define PARTNO_DEFAULT 0xBA01
 
-#define ROW_FORMAT "CLK: %2d | IO: %2d | ACK: %ld | PART: %5lx | MAN: %4lx\r\n"
+#define SEPARATOR "+-------------------------------------------+"
+#define TABLE_HEADER "| CLK PIN | IO PIN | ACK | PART NO | MAN ID |"
+#define ROW_FORMAT   "|   %2d    |   %2d   |  %ld  |  %5lx  |  %4lx  |\r\n"
+#define TABLE_FOOTER_S "+----------------- SUCCESS -----------------+"
+#define TABLE_FOOTER_F "+----------------- FAILURE -----------------+"
 #define PROMPT "> "
 
 #define getAck(value) (value & 0x7)
@@ -372,6 +376,27 @@ void printPrompt()
 }
 
 /**
+ * Print result table header
+ */
+void printTableHeader()
+{
+    Serial.println(SEPARATOR);
+    Serial.println(TABLE_HEADER);
+    Serial.println(SEPARATOR);
+}
+
+/**
+ * Print result table footer
+ *
+ * @param: search outcome
+ */
+void printTableFooter(bool success)
+{
+    const char * msg = (success) ? TABLE_FOOTER_S : TABLE_FOOTER_F;
+    Serial.println(msg);
+}
+
+/**
  * Minimalistic command line interface
  */
 void commandLineInterface()
@@ -380,7 +405,11 @@ void commandLineInterface()
     switch (selection)
     {
         case 'e':
-            enumerateSwdLines();
+            {
+                printTableHeader();
+                bool status = enumerateSwdLines();
+                printTableFooter(status);
+            }
             break;
         case 'm':
             {
@@ -411,6 +440,7 @@ void commandLineInterface()
                 break_on_hit = choice;
             }
             break;
+        case 'v':
         case 'd':
             {
                 Serial.print("Choose debug level 0-2 ");
@@ -422,14 +452,19 @@ void commandLineInterface()
             break;
         case 'h':
         default:
-            Serial.println("e - enumerate swd lines");
-            Serial.print("m - set pin mask, current: ");
+            Serial.println(SEPARATOR);
+            Serial.println("|                   SWDScan                  |");
+            Serial.println(SEPARATOR);
+            Serial.println(" e - enumerate swd lines");
+            Serial.print(" m - set pin mask, current: ");
             Serial.println((unsigned long) pin_mask, HEX);
-            Serial.println("t - test pin pair for swd");
-            Serial.println("b - break on hit");
-            Serial.print("d - set debug level, current: ");
+            Serial.println(" t - test pin pair for swd");
+            Serial.print(" b - break on hit, current: ");
+            Serial.println(break_on_hit, DEC);
+            Serial.print(" d - set debug level, current: ");
             Serial.println(debug, DEC);
-            Serial.println("h - this help");
+            Serial.println(" h - this help");
+            Serial.println(SEPARATOR);
             break;
     }
 }
