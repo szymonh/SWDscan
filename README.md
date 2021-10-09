@@ -23,7 +23,42 @@ without the need to rebuild the project.
 - use option _h_ for help
 - use option _e_ to enumerate pins
 
+## How to configure it?
+
+- _m_ - pin mask set at runtime - select which MCU GPIO pins to check for SWD IO and CLK lines,
+value can be provided as either a decimal or hexadecimal integer up to 64 pins,
+pin X is enabled by setting a bit at position X to 1 in the pin mask, pin 0 is of least significance,
+for example 0x3 enables pins 0 and 1, 0xff enables pins 0 to 7 and 0xfc enables pins 2 to 7
+
+- _d_ - debug level - defaults to normal
+  - normal - prints information for each tested combination
+  - quiet - prints information only for positive hits
+  - verbose - prints bit patterns set and received on the IO line
+
+- _b_ - break on hit - defaults to true
+  - true - search is stopped when positive hit is found
+  - false - search is continued despite positive hit is found
+
+## What is test mode for?
+
+Test mode allows to check if target SWD IO and CLK lines are connected to specified pins.
+
 ## How does it look like?
+
+- help menu
+```
+> h
++-------------------------------------------+
+|                   SWDScan                  |
++-------------------------------------------+
+ e - enumerate swd lines
+ m - set pin mask, current: 0x1C
+ t - test pin pair for swd
+ b - break on hit, current: 1
+ d - set debug level, current: 1
+ h - this help
++-------------------------------------------+
+```
 
 - swd enumeration with debug level 1 on a BluePill
 ```
@@ -40,20 +75,6 @@ Debug set to 1
 |    3    |    4   |  7  |   ffff  |   7ff  |
 |    4    |    2   |  7  |   ffff  |   7ff  |
 |    4    |    3   |  7  |   ffff  |   7ff  |
-+----------------- SUCCESS -----------------+
-```
-
-- swd enumaration with debug level 1 and break on hit enabled
-```
-> b
-Break work on hit? 1/0 1
-> e
-+-------------------------------------------+
-| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
-+-------------------------------------------+
-|    2    |    3   |  7  |   ffff  |   7ff  |
-|    2    |    4   |  7  |   ffff  |   7ff  |
-|    3    |    2   |  1  |   ba01  |   23b  |
 +----------------- SUCCESS -----------------+
 ```
 
