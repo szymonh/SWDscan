@@ -426,11 +426,9 @@ void commandLineInterface()
                 byte user_clk_pin = (byte) readCliUnsignedInt();
                 Serial.print("Enter SWD IO PIN NO ");
                 byte user_io_pin = (byte) readCliUnsignedInt();
-                Serial.print("SWD CLK set to ");
-                Serial.println(user_clk_pin, DEC);
-                Serial.print("SWD IO set to ");
-                Serial.println(user_io_pin, DEC);
-                testSwdLines(user_clk_pin, user_io_pin);
+                printTableHeader();
+                bool status = testSwdLines(user_clk_pin, user_io_pin);
+                printTableFooter(status);
             }
             break;
         case 'b':
@@ -456,7 +454,7 @@ void commandLineInterface()
             Serial.println("|                   SWDScan                  |");
             Serial.println(SEPARATOR);
             Serial.println(" e - enumerate swd lines");
-            Serial.print(" m - set pin mask, current: ");
+            Serial.print(" m - set pin mask, current: 0x");
             Serial.println((unsigned long) pin_mask, HEX);
             Serial.println(" t - test pin pair for swd");
             Serial.print(" b - break on hit, current: ");
