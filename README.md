@@ -104,6 +104,13 @@ Enter SWD IO PIN NO 3
 +----------------- FAILURE -----------------+
 ```
 
+## Nothing found?
+
+In case the target fails to switch to SWD mode:
+- put the target into reset state
+- put the target into bootloader mode (bootN pins)
+- ensure common ground is present between scanner board and target
+
 ## No Platformio?
 
 No problem, just copy the contents of src/main.cpp to a new Arduino project, remove the Arduino.h import from the first line and you're ready to go.
