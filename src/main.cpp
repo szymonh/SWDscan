@@ -473,6 +473,8 @@ void commandLineInterface()
 void setup()
 {
     pin_max = getMaxPinFromMask(pin_mask);
+    debug = normal;
+    break_on_hit = true;
     Serial.begin(115200);
 }
 
