@@ -29,13 +29,32 @@ without the need to rebuild the project.
 ```
 > d
 Choose debug level 0-2 1
+Debug set to 1
 > e
-CLK:  2 | IO:  3 | ACK: 7 | PART:  ffff | MAN:  7ff
-CLK:  2 | IO:  4 | ACK: 7 | PART:  ffff | MAN:  7ff
-CLK:  3 | IO:  2 | ACK: 1 | PART:  ba01 | MAN:  23b
-CLK:  3 | IO:  4 | ACK: 7 | PART:  ffff | MAN:  7ff
-CLK:  4 | IO:  2 | ACK: 7 | PART:  ffff | MAN:  7ff
-CLK:  4 | IO:  3 | ACK: 7 | PART:  ffff | MAN:  7ff
++-------------------------------------------+
+| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
++-------------------------------------------+
+|    2    |    3   |  7  |   ffff  |   7ff  |
+|    2    |    4   |  7  |   ffff  |   7ff  |
+|    3    |    2   |  1  |   ba01  |   23b  |
+|    3    |    4   |  7  |   ffff  |   7ff  |
+|    4    |    2   |  7  |   ffff  |   7ff  |
+|    4    |    3   |  7  |   ffff  |   7ff  |
++----------------- SUCCESS -----------------+
+```
+
+- swd enumaration with debug level 1 and break on hit enabled
+```
+> b
+Break work on hit? 1/0 1
+> e
++-------------------------------------------+
+| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
++-------------------------------------------+
+|    2    |    3   |  7  |   ffff  |   7ff  |
+|    2    |    4   |  7  |   ffff  |   7ff  |
+|    3    |    2   |  1  |   ba01  |   23b  |
++----------------- SUCCESS -----------------+
 ```
 
 - test response on lines 3 and 2 with debug level 1 (valid connection, read part no is 0xba01)
@@ -43,7 +62,11 @@ CLK:  4 | IO:  3 | ACK: 7 | PART:  ffff | MAN:  7ff
 > t
 Enter SWD CLK PIN NO 3
 Enter SWD IO PIN NO 2
-CLK:  3 | IO:  2 | ACK: 1 | PART:  ba01 | MAN:  23b
++-------------------------------------------+
+| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
++-------------------------------------------+
+|    3    |    2   |  1  |   ba01  |   23b  |
++----------------- SUCCESS -----------------+
 ```
 
 - test response on lines 2 and 3 with debug level 1 (invalid connection, read part no is 0xffff)
@@ -51,7 +74,11 @@ CLK:  3 | IO:  2 | ACK: 1 | PART:  ba01 | MAN:  23b
 > t
 Enter SWD CLK PIN NO 2
 Enter SWD IO PIN NO 3
-CLK:  2 | IO:  3 | ACK: 7 | PART:  ffff | MAN:  7ff
++-------------------------------------------+
+| CLK PIN | IO PIN | ACK | PART NO | MAN ID |
++-------------------------------------------+
+|    2    |    3   |  7  |   ffff  |   7ff  |
++----------------- FAILURE -----------------+
 ```
 
 ## No Platformio?
