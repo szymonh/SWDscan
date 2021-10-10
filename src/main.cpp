@@ -451,7 +451,7 @@ void commandLineInterface()
         case 'h':
         default:
             Serial.println(SEPARATOR);
-            Serial.println("|                   SWDScan                  |");
+            Serial.println("|                   SWDScan                 |");
             Serial.println(SEPARATOR);
             Serial.println(" e - enumerate swd lines");
             Serial.print(" m - set pin mask, current: 0x");

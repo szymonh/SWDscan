@@ -49,7 +49,7 @@ Test mode allows to check if target SWD IO and CLK lines are connected to specif
 ```
 > h
 +-------------------------------------------+
-|                   SWDScan                  |
+|                   SWDScan                 |
 +-------------------------------------------+
  e - enumerate swd lines
  m - set pin mask, current: 0x1C
