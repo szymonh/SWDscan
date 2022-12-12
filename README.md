@@ -135,3 +135,7 @@ In case the target fails to switch to SWD mode:
 ## No Platformio?
 
 No problem, just copy the contents of src/main.cpp to a new Arduino project, remove the Arduino.h import from the first line and you're ready to go.
+
+## Need JTAG?
+
+Check [JTAGscan](https://github.com/szymonh/JTAGscan) to identify JTAG TMS, TCK, TDO and TDI pins.
