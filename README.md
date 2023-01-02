@@ -131,6 +131,11 @@ In case the target fails to switch to SWD mode:
 - put the target into reset state
 - put the target into bootloader mode (bootN pins)
 - ensure common ground is present between scanner board and target
+- check limitations section below
+
+## Limitiations
+
+SWDscan currently supports only SWD v1. Newer versions of SWD (e.g. with multi-drop support as present on the RP2040) won't be detected due to required changes in the discovery phase including knowledge of the TARGETID.
 
 ## No Platformio?
 
