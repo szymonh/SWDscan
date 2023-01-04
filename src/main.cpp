@@ -197,7 +197,28 @@ void switchJtagToSwd()
     resetLine();
     writeBits(JTAG_TO_SWD, 16);
     resetLine();
-    writeBits(0x00, 4);
+    writeBits(0x00, 8);
+}
+
+/**
+ * Leave dormant state
+ *
+ * Required for SWD newer than v1
+ * Described in section B5.3.4 of debug interface
+ * specification v5.2
+ */
+void leaveDormantState()
+{
+    writeBits(0xffff, 16);          // at least 8 cycles high
+    writeBits(0x6209F392, 32);      // selection alert sequence
+    writeBits(0x86852D95, 32);
+    writeBits(0xE3DDAFE9, 32);
+    writeBits(0x19BC0EA2, 32);
+    writeBits(0x00, 4);             // four cycles low
+    writeBits(0x1a, 8);             // SW-DP activation code
+
+    resetLine();
+    writeBits(0x00, 8);
 }
 
 /**
@@ -246,6 +267,7 @@ bool testSwdLines(byte new_swclk_pin, byte new_swdio_pin)
     setPins(new_swclk_pin, new_swdio_pin);
     setupPins();
     switchJtagToSwd();
+    leaveDormantState();
     readIdCode(&readBuffer);
     result = getAck(readBuffer) == 1 && getManufacturer(readBuffer) == DESIGNER_DEFAULT;
     if (result || debug >= normal) printResultRow(readBuffer);
